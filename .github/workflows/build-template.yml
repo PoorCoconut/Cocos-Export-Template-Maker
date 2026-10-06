@@ -41,7 +41,7 @@ jobs:
 
       - name: Set up Emscripten
         uses: mymindstorm/setup-emsdk@v14
-
+        
       - name: Compile Web Template
         working-directory: ${{ github.workspace }}/godot-source
         run: scons platform=web target=template_release profile="../config-repo/custom.py"
@@ -73,7 +73,13 @@ jobs:
         with:
           python-version: '3.x'
       - run: python -m pip install scons
-
+      
+      - name: Install Windows Dependencies
+        working-directory: ${{ github.workspace }}/godot-source
+        run: |
+          python misc/scripts/install_accesskit.py
+          python misc/scripts/install_d3d12_sdk_windows.py
+          
       - name: Compile Windows Template
         working-directory: ${{ github.workspace }}/godot-source
         run: scons platform=windows target=template_release profile="../config-repo/custom.py"
