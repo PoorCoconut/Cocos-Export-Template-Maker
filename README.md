@@ -1,4 +1,4 @@
-# Cocos Custom Export Template Maker (Godot Engine)
+# Coco's Custom Export Template Maker (Godot Engine)
 
 *Fork this repository to effectively use it.*
 
