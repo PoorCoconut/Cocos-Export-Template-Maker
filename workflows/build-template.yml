@@ -1,0 +1,85 @@
+name: Build Custom Export Templates
+
+on:
+  workflow_dispatch:
+    inputs:
+      godot_tag:
+        description: 'Godot Source Branch/Tag'
+        required: true
+        default: '4.7-stable'
+      build_web:
+        description: 'Build WebAssembly (HTML5) Template'
+        type: boolean
+        default: true
+      build_windows:
+        description: 'Build Windows Template'
+        type: boolean
+        default: false
+
+jobs:
+  build-web:
+    if: ${{ github.event.inputs.build_web == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Configuration Repository
+        uses: actions/checkout@v4
+        with:
+          path: 'config-repo'
+
+      - name: Checkout Godot Source
+        uses: actions/checkout@v4
+        with:
+          repository: 'godotengine/godot'
+          ref: ${{ github.event.inputs.godot_tag }}
+          path: 'godot-source'
+
+      - name: Install Python and SCons
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python -m pip install scons
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Compile Web Template
+        working-directory: ${{ github.workspace }}/godot-source
+        run: scons platform=web target=template_release profile="../config-repo/custom.py"
+
+      - name: Upload Web Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-custom-template
+          path: godot-source/bin/*.zip
+
+  build-windows:
+    if: ${{ github.event.inputs.build_windows == 'true' }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Configuration Repository
+        uses: actions/checkout@v4
+        with:
+          path: 'config-repo'
+
+      - name: Checkout Godot Source
+        uses: actions/checkout@v4
+        with:
+          repository: 'godotengine/godot'
+          ref: ${{ github.event.inputs.godot_tag }}
+          path: 'godot-source'
+
+      - name: Install Python and SCons
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python -m pip install scons
+
+      - name: Compile Windows Template
+        working-directory: ${{ github.workspace }}/godot-source
+        run: scons platform=windows target=template_release profile="../config-repo/custom.py"
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-custom-template
+          path: godot-source/bin/*.exe
